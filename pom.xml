@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.mule.examples</groupId>
@@ -24,12 +26,9 @@
 			<version>${proxyExtensionVersion}</version>
 			<classifier>mule-plugin</classifier>
 		</dependency>
-		<!-- <dependency>
-			<groupId>com.mulesoft.anypoint</groupId>
-			<artifactId>mule-rest-validator-extension</artifactId>
-			<version>${restValidatorVersion}</version>
-			<classifier>mule-plugin</classifier>
-		</dependency> -->
+		<!-- <dependency> <groupId>com.mulesoft.anypoint</groupId> <artifactId>mule-rest-validator-extension</artifactId> 
+			<version>${restValidatorVersion}</version> <classifier>mule-plugin</classifier> 
+			</dependency> -->
 		<dependency>
 			<groupId>org.mule.connectors</groupId>
 			<artifactId>mule-http-connector</artifactId>
@@ -51,7 +50,19 @@
 				<version>${muleMavenPluginVersion}</version>
 				<extensions>true</extensions>
 				<configuration>
-					<classifier>mule-application</classifier>
+					<cloudHubDeployment>
+						<uri>https://anypoint.mulesoft.com</uri>
+						<server>${server}</server>
+						<muleVersion>${app.runtime}</muleVersion>
+						<applicationName>${app.name}</applicationName>
+						<workers>${workers}</workers>
+						<workerType>${workerType}</workerType>
+						<environment>${environment}</environment>
+						<objectStoreV2>true</objectStoreV2>
+						<!-- <username>${username}</username> -->
+						<!-- <password>${password}</password> -->
+					</cloudHubDeployment>
+					<!-- <classifier>mule-application</classifier> -->
 				</configuration>
 			</plugin>
 		</plugins>
