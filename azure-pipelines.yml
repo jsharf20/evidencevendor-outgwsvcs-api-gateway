@@ -1,57 +1,54 @@
-# Maven
-# Build your Java project and run tests with Apache Maven.
-# Add steps that analyze code, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/java
-
-trigger:
-   batch: true
-   branches:
-    include:
-	- development
-   paths:
-	exclude:
-	-  azure-pipelines.yml
-
-pool:
-  vmImage: 'ubuntu-latest'
-
-variables:
-- group : Build-Variable-Group
-- name: MAVEN_CACHE_FOLDER
-  value: $(Pipeline.Workspace)/.m2/repository
-- name: MAVEN_OPTS
-   value: '-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
-
-steps:
-- task: CacheBeta@0
-  inputs:
-    key: $(Build.SourcesDirectory)/pom.xml
-    path: $(MAVEN_CACHE_FOLDER)
-  displayName: Cache Maven local repo
-  
-- task: DownloadSecureFile@1
-  displayName: Download secure file
-  name: settings
-  inputs:
-    secureFile: 'settings.xml'
-
-- task: PowerShell@2
-  inputs:
-    targettype: 'inline'
-	script: |
-	  New-Item -Type Directory -Force "${HOME}/.m2"
-	  Copy-Item -Force "${settingxml.secureFilePath}"  "${HOME}/.m2/settings.xml"
-
-- task: Maven@3
-  inputs:
-    mavenPomFile: 'pom.xml'
-    publishJUnitResults: true
-    testResultsFiles: '**/surefire-reports/TEST-*.xml'
-    mavenOptions: '-Xmx3072m'
-	mavenAuthenticationFeed: true
-	mavenVersionOption: 'Default'
-    javaHomeOption: 'JDKVersion'
-    jdkVersionOption: '1.8'
-    jdkArchitectureOption: 'x64'
-	effectivePomSkip: true
-    goals: 'clean install package deploy $(MAVEN_OPTS) -DmuleDeploy -Dserver=${server} -Denvironment=${environment} -Dworkers=${workers} -DworkerType=${workerType}  -Dapp.runtime={app.runtime}  -Dapp.name=${app.name}'
+--- 
+pool: 
+  vmImage: ubuntu-latest
+steps: 
+  - 
+    displayName: "Cache Maven local repo"
+    inputs: 
+      key: $(Build.SourcesDirectory)/pom.xml
+      path: $(MAVEN_CACHE_FOLDER)
+    task: CacheBeta@0
+  - 
+    displayName: "Download secure file"
+    inputs: 
+      secureFile: settings.xml
+    name: settings
+    task: DownloadSecureFile@1
+  - 
+    inputs: 
+      script: |
+          New-Item -Type Directory -Force "${HOME}/.m2"
+          Copy-Item -Force "${settingxml.secureFilePath}"  "${HOME}/.m2/settings.xml"
+      targettype: inline
+    task: PowerShell@2
+  - 
+    inputs: 
+      effectivePomSkip: true
+      goals: "clean install package deploy $(MAVEN_OPTS) -DmuleDeploy -Dserver=${server} -Denvironment=${environment} -Dworkers=${workers} -DworkerType=${workerType}  -Dapp.runtime={app.runtime}  -Dapp.name=${app.name}"
+      javaHomeOption: JDKVersion
+      jdkArchitectureOption: x64
+      jdkVersionOption: "1.8"
+      mavenAuthenticationFeed: true
+      mavenOptions: "-Xmx3072m"
+      mavenPomFile: pom.xml
+      mavenVersionOption: Default
+      publishJUnitResults: true
+      testResultsFiles: "**/surefire-reports/TEST-*.xml"
+    task: Maven@3
+trigger: 
+  batch: true
+  branches: 
+    include: 
+      - development
+  paths: 
+    exclude: 
+      - azure-pipelines.yml
+variables: 
+  - 
+    group: Build-Variable-Group
+  - 
+    name: MAVEN_CACHE_FOLDER
+    value: $(Pipeline.Workspace)/.m2/repository
+  - 
+    name: MAVEN_OPTS
+    value: "-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)"
