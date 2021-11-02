@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 #@@ -0,0 +1,57 @@
-=======
-@@ -0,0 +1,57 @@
->>>>>>> 949a8205c3d91856021568aa8b348cae2d647c37
 # Maven
 # Build your Java project and run tests with Apache Maven.
 # Add steps that analyze code, save build artifacts, deploy, and more:
@@ -12,17 +8,10 @@ trigger:
    batch: true
    branches:
     include:
-<<<<<<< HEAD
     - development
    paths:
    exclude:
    - azure-pipelines.yml
-=======
-	- development
-   paths:
-	exclude:
-	- azure-pipelines.yml
->>>>>>> 949a8205c3d91856021568aa8b348cae2d647c37
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -45,24 +34,14 @@ steps:
   displayName: Download secure file
   name: settings
   inputs:
-<<<<<<< HEAD
     secureFile: 'settings.xml'
-=======
-   secureFile: 'settings.xml'
->>>>>>> 949a8205c3d91856021568aa8b348cae2d647c37
 
 - task: PowerShell@2
   inputs:
     targettype: 'inline'
-<<<<<<< HEAD
     script: |
      New-Item -Type Directory -Force "${HOME}/.m2"
      Copy-Item -Force "${settingxml.secureFilePath}"  "${HOME}/.m2/settings.xml"
-=======
-	script: |
-	  New-Item -Type Directory -Force "${HOME}/.m2"
-	  Copy-Item -Force "${settingxml.secureFilePath}"  "${HOME}/.m2/settings.xml"
->>>>>>> 949a8205c3d91856021568aa8b348cae2d647c37
 
 - task: Maven@3
   inputs:
@@ -70,7 +49,6 @@ steps:
     publishJUnitResults: true
     testResultsFiles: '**/surefire-reports/TEST-*.xml'
     mavenOptions: '-Xmx3072m'
-<<<<<<< HEAD
     mavenAuthenticationFeed: true
     mavenVersionOption: 'Default'
     javaHomeOption: 'JDKVersion'
@@ -78,12 +56,3 @@ steps:
     jdkArchitectureOption: 'x64'
     effectivePomSkip: true
     goals: 'clean install package deploy $(MAVEN_OPTS) -DmuleDeploy -Dserver=${server} -Denvironment=${environment} -Dworkers=${workers} -DworkerType=${workerType}  -Dapp.runtime={app.runtime}  -Dapp.name=${app.name}'
-=======
-	mavenAuthenticationFeed: true
-	mavenVersionOption: 'Default'
-    javaHomeOption: 'JDKVersion'
-    jdkVersionOption: '1.8'
-    jdkArchitectureOption: 'x64'
-	effectivePomSkip: true
-    goals: 'clean install package deploy $(MAVEN_OPTS) -DmuleDeploy -Dserver=${server} -Denvironment=${environment} -Dworkers=${workers} -DworkerType=${workerType}  -Dapp.runtime={app.runtime}  -Dapp.name=${app.name}'
->>>>>>> 949a8205c3d91856021568aa8b348cae2d647c37
