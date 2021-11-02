@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+      xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"
+      xmlns:proxy="http://www.mulesoft.org/schema/mule/proxy"
+      xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+      xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway"
+      xmlns:rest-validator="http://www.mulesoft.org/schema/mule/rest-validator" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+        http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd
+        http://www.mulesoft.org/schema/mule/proxy http://www.mulesoft.org/schema/mule/proxy/current/mule-proxy.xsd
+        http://www.mulesoft.org/schema/mule/rest-validator http://www.mulesoft.org/schema/mule/rest-validator/current/mule-rest-validator.xsd
+        http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+    <configuration-properties file="config-${mule_env}.properties"/>
+     <http:request-config name="HTTP_Request_configuration_Milliman" enableCookies="false" responseTimeout="${http_response_time}">
+        <http:request-connection host="${milliman.host}" port="${milliman.port}"
+                                 protocol="HTTPS"/>
+    </http:request-config>
+     <http:request-config name="HTTP_Request_configuration_LN" doc:name="HTTP Request configuration" doc:id="d2a44797-6f21-4917-9a58-66b0101ae1a1" responseTimeout="${http_response_time}" >
+		<http:request-connection protocol="HTTPS" host="${lexisnexis.host}" port="${lexisnexis.port}" >
+			<http:authentication >
+				<http:basic-authentication username="${lexisnexis.username}" password="${lexisnexis.password}" />
+			</http:authentication>
+		</http:request-connection>
+	</http:request-config>
+
+    <!-- <configuration defaultResponseTimeout="${proxy.responseTimeout}"/> -->
+
+    <proxy:config name="proxy-config"/>
+
+    <api-gateway:autodiscovery apiId="${api.id}" flowRef="proxy" api-gateway:ignoreBasePath="true" ignoreBasePath="true"/>
+
+<!--     <rest-validator:config name="configValidator" -->
+<!--                            api="${implementation.api.spec}" -->
+<!--                            parser="${implementation.api.parser}" -->
+<!--                            disableValidations="${validation.disable}" -->
+<!--                            queryParamsStrictValidation="${validation.strict.queryParams}" -->
+<!--                            headersStrictValidation="${validation.strict.headers}"/> -->
+
+   
+	<flow name="proxy">
+        <http:listener config-ref="http-listener-config" path="${proxy.path}">
+            <http:response statusCode="#[attributes.statusCode]" reasonPhrase="#[attributes.reasonPhrase]">
+                <http:headers><![CDATA[#[if (vars.proxyResponseHeaders?) vars.proxyResponseHeaders else {}]]]></http:headers>
+            </http:response>
+			<http:error-response statusCode="#[vars.statusCode]">
+				<http:body ><![CDATA[#[payload]]]></http:body>
+			</http:error-response>
+        
+</http:listener>
+
+<!--         <rest-validator:validate-request config-ref="configValidator"/> -->
+
+        <proxy:request-headers config-ref="proxy-config" target="proxyRequestHeaders"/>
+
+        <ee:transform doc:name="Transform Message" doc:id="7dd4c2b1-c6d6-42bd-b4ce-34a1a6b60e97" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="uri" ><![CDATA[%dw 2.0
+output application/java
+import java!org::apache::commons::lang3::StringUtils
+var reqPath = attributes.requestPath
+var startsWith = (reqPath find "/")[3]
+---
+StringUtils::substring(reqPath,startsWith, sizeOf (reqPath))]]></ee:set-variable>
+				<ee:set-variable variableName="key" ><![CDATA[%dw 2.0
+output application/java
+var reqPath = attributes.requestPath
+
+---
+(reqPath splitBy "/")[1]]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="65698b7a-4daf-403b-b9ff-2fb0fbdaef65" message='#[%dw 2.0
+&#10;output application/java
+&#10;---
+&#10;"key :: " ++ vars.key ++ ":: uri :: " ++ vars.uri]'/>
+		<choice doc:name="Choice" doc:id="79d796c8-3ac7-40a3-9737-cdee5c777553" >
+			<when expression="#[vars.key == 'milliman']">
+				<http:request config-ref="HTTP_Request_configuration_Milliman" method="POST" path="#[vars.uri]" doc:name="HTTP Milliman">
+            <http:headers><![CDATA[#[vars.proxyRequestHeaders]]]></http:headers>
+            <http:uri-params><![CDATA[#[attributes.uriParams]]]></http:uri-params>
+            <http:query-params><![CDATA[#[attributes.queryParams]]]></http:query-params>
+            <http:response-validator>
+                <http:success-status-code-validator values="0..599" />
+            </http:response-validator>
+        </http:request>
+			</when>
+			<when expression="#[vars.key =='lexisnexis']">
+				<http:request method="POST" doc:name="HTTPS LexisNexis" doc:id="420deae9-ab6e-44ba-9d6d-7ad9e7e4c8e9" config-ref="HTTP_Request_configuration_LN" path="#[vars.uri]"/>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="18c738d1-c17b-4b2b-8642-7fd0ef8441da" message="Incorrect URL"/>
+			</otherwise>
+		</choice>
+
+        <proxy:response-headers config-ref="proxy-config" target="proxyResponseHeaders"/>
+
+        <error-handler>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="c357876c-d52a-429c-ac54-be67bfdeb2aa" type="HTTP:TIMEOUT">
+				<set-payload value="Gateway timeout" doc:name="Set Payload" doc:id="2c68c021-54b0-4877-b071-ffa8a4bd0c46" />
+				<set-variable value="504" doc:name="Set Variable" doc:id="bd2bc072-b1e0-45cd-b1a8-815b166753f8" variableName="statusCode"/>
+			</on-error-propagate>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="2f1cebca-2708-4e73-bc7a-ae36c73226d6" type="ANY">
+				<set-payload value='#[output application/json
+&#10;---
+&#10;{  "success": false,  "message": "Invalid URL"  }]' doc:name="Set Payload" doc:id="24f4bc37-388a-4eee-ab5b-d7289c5f9c1c" />
+				<set-variable value="500" doc:name="Set Variable" doc:id="f234af78-6da8-48f2-b80a-74a91aab9a70" variableName="statusCode"/>
+			</on-error-propagate>
+			
+        
+</error-handler>
+
+    </flow>
+
+
+</mule>
