@@ -9,7 +9,7 @@ trigger:
    batch: true
    branches:
     include:
-    - development
+    - develpoment
    paths:
     exclude:
     - azure-pipelines.yml
