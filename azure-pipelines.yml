@@ -56,4 +56,4 @@ steps:
     jdkVersionOption: '1.8'
     jdkArchitectureOption: 'x64'
     effectivePomSkip: true
-    goals: 'clean install package deploy $(MAVEN_OPTS) -DmuleDeploy -Dserver=${server} -Denvironment=${environment} -Dworkers=${workers} -DworkerType=${workerType}  -Dapp.runtime={app.runtime}  -Dapp.name=${app.name}'
+    goals: 'clean install package deploy $(MAVEN_OPTS) -DmuleDeploy  -Dserver=Anypoint  -Denvironment=DEVELOPMENT -Dworkers=1  -DworkerType=Micro  -Dapp.runtime=4.3.0  -Dapp.name=dev-evidencevendor-outgwsvcs'
