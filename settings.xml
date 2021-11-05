@@ -1,9 +1,67 @@
+<?xml version="1.0"?>
 <settings>
-<servers>
-<server>
+ <servers>
+  <server>
+   <id>nexus</id>
+   <username>usernameonfile</username>
+   <password>pwdonfile</password>
+  </server>
+  <server>
 <id>Anypoint</id>
 <username>jabbarshariff_se2</username>
 <password>Jan#2007</password>
 </server>
-</servers>
+
+ </servers> 
+ <pluginGroups>
+  <pluginGroup>org.mule.tools</pluginGroup>
+  <pluginGroup>com.github.nicholasastuart</pluginGroup>
+ </pluginGroups>
+ <profiles>
+  <!--<profile>
+   <id>mule-extra-repos</id>
+   <activation>
+   <activeByDefault>false</activeByDefault>
+   </activation>
+   <repositories>
+    <repository>
+     <id>mule-public</id>
+     <url> https://repository.mulesoft.org/nexus/content/repositories/public</url>
+    </repository>
+   </repositories>
+   <pluginRepositories>
+    <pluginRepository>
+     <id>mule-public</id>
+     <url>https://repository.mulesoft.org/nexus/content/repositories/public</url>
+    </pluginRepository>
+   </pluginRepositories>
+  </profile> -->
+  <profile>
+   <id>Mule</id>
+   <activation>
+    <activeByDefault>true</activeByDefault>
+   </activation>
+   <repositories>
+    <repository>
+     <id>MuleRepository</id>
+     <name>MuleRepository</name>
+     <url>http://setopspeapp01d:8081/repository/MULE/</url>
+     <layout>default</layout>
+     <releases>
+      <enabled>true</enabled>
+     </releases>
+     <snapshots>
+      <enabled>true</enabled>
+     </snapshots>
+    </repository>
+   </repositories>
+   <pluginRepositories>
+    <pluginRepository>
+     <id>mule-public</id>
+     <url>http://setopspeapp01d:8081/repository/MULE/</url>
+    </pluginRepository>
+   </pluginRepositories>
+  </profile>
+ </profiles>
 </settings>
+
